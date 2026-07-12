@@ -18,11 +18,12 @@ identity.
 | Endpoint | Price | Atomic units | What it does |
 | --- | --- | --- | --- |
 | `POST https://skim402.com/api/v1/read` | $0.002 | 2000 | Clean Markdown + metadata from a URL |
-| `POST https://skim402.com/api/v2/read` | $0.002 | 2000 | Same as v1, x402 v2 handshake |
-| `POST https://skim402.com/api/v2/read/js` | $0.005 | 5000 | JavaScript-rendered read (SPAs, dynamic pages) |
+| `GET https://skim402.com/api/v2/read?url=...` | $0.002 | 2000 | Same as v1, x402 v2 handshake |
+| `GET https://skim402.com/api/v2/read/js?url=...` | $0.005 | 5000 | JavaScript-rendered read (SPAs, dynamic pages) |
 | `POST https://skim402.com/api/v2/extract` | $0.015 | 15000 | Typed JSON from a page via a JSON Schema you supply |
 
-Request body for reads: `{"url": "https://..."}`. For extract:
+The v1 read takes a JSON body `{"url": "https://..."}`. The v2 reads take the
+target as a `url` query parameter. Extract takes a JSON body
 `{"url": "https://...", "schema": { ...JSON Schema... }}`.
 
 Successful reads return `{ "markdown", "text", "metadata", ... }`. A response
@@ -42,9 +43,18 @@ npx awal@2.12.0 x402 pay https://skim402.com/api/v1/read \
   --json
 ```
 
-For a JavaScript-rendered read use the `/api/v2/read/js` endpoint with
-`--max-amount 5000`; for extraction use `/api/v2/extract` with
-`--max-amount 15000` and include your `schema` in `-d`.
+For a JavaScript-rendered read, use the v2 GET endpoint with the target URL as
+a query parameter:
+
+```bash
+npx awal@2.12.0 x402 pay https://skim402.com/api/v2/read/js \
+  -q '{"url": "https://example.com/spa-page"}' \
+  --max-amount 5000 \
+  --json
+```
+
+For extraction use `POST /api/v2/extract` with `--max-amount 15000` and
+include your `schema` alongside `url` in `-d`.
 
 Set `--max-amount` to the price of the endpoint you call (table above) so the
 wallet never signs for more than expected.
